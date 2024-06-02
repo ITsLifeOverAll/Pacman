@@ -1,4 +1,6 @@
 ﻿
+using ConsolePacman;
+
 bool playAgain;
 do
 {
