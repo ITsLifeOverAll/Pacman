@@ -72,18 +72,18 @@ public class Game
             if (token.IsCancellationRequested) break;
             
             _pacman.PacmanMove();
-            isGameOver = _world.UpdateScore(_pacman, _ghosts);
+            isGameOver = _world.UpdateBy(_pacman, _ghosts);
 
             if (!isGameOver)
             {
-                _ghosts.GhostsMoveAndScore();
-                isGameOver = _world.UpdateScore(_ghosts, _pacman);
+                // todo _ghosts.GhostsMoveAndScore();
+                // todo isGameOver = _world.UpdateBy(_ghosts, _pacman);
             }
 
             await Task.Delay(100);
         }
 
-        _world.ShowGameOver();
+        // todo _world.ShowGameOver();
     }
 
     private bool StartGame()
@@ -96,7 +96,7 @@ public class Game
         while (key != ConsoleKey.Enter && key != ConsoleKey.Escape) key = Console.ReadKey(true).Key;
         
         Console.SetCursorPosition(0, 24);
-        Console.WriteLine();
+        Console.WriteLine("                                               ");
         _world.EraseTextReady();
         
         return (key is ConsoleKey.Enter);
@@ -106,7 +106,7 @@ public class Game
     {
         _world.ShowWorld();
         _world.ShowDots();
-        _world.ShowPacman(_pacman);
+        _world.ShowPacman(_pacman, _pacman.Position);
         _ghosts.Members.ForEach(ghost => _world.ShowGhost(ghost));
     }
 }

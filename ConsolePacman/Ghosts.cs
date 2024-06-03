@@ -1,3 +1,5 @@
+using System.IO.MemoryMappedFiles;
+
 namespace ConsolePacman;
 
 public class Ghosts
@@ -17,7 +19,9 @@ public class Ghosts
         }
     }
 
-    
+
+    public void Reborn(Ghost ghost) 
+        => Members[ghost.index] = new Ghost(World, ghost.index);
 }
 
 public class Ghost(World world, int index)
@@ -26,4 +30,5 @@ public class Ghost(World world, int index)
     public Position Position = world.GhostStartPositions[index];
     public Direction Direction = Direction.None;
     public ConsoleColor Color = Ghosts.Colors[index];
+    public bool Weak { get; set; }
 }
