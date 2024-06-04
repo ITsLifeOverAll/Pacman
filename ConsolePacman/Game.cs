@@ -102,7 +102,7 @@ public class Game
     {
         _world.ShowWorld();
         _world.ShowDots();
-        _world.ShowPacman(_pacman, _pacman.Position);
+        _world.ShowPacman(_pacman, _pacman.Position, _pacman.Direction);
         _ghosts.Members.ForEach(ghost => _world.ShowGhost(ghost));
     }
 }

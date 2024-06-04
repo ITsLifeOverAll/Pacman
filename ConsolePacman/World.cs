@@ -198,12 +198,14 @@ public class World
 		Console.BackgroundColor = originalBackgroundColor;
 	}
 
-	public void ShowPacman(Pacman pacman, Position position)
+	public void ShowPacman(Pacman pacman, Position position, Direction direction)
 	{
-		UsingColor(ConsoleColor.Black, ConsoleColor.Yellow, () =>
+		var (foregroundColor, backgroundColor) = pacman.StateColor();
+		UsingColor(foregroundColor, backgroundColor, () =>
 		{
 			Console.SetCursorPosition(position.Col, position.Row);
-			Console.Write('P');
+			var c = pacman.FrameFace(direction); 
+			Console.Write(c);
 		});
 	}
 
@@ -314,6 +316,8 @@ public class World
 	/// <returns>true for game over</returns>
 	public bool UpdateBy(Pacman pacman, Ghosts ghosts)
 	{
+		PacmanPowerDecrease(pacman, ghosts);
+		
 		var (row, col) = pacman.Position;
 		var c = _dots[row, col];
 		var isGameOver = false;
@@ -337,7 +341,13 @@ public class World
 		ShowScore();
 		return isGameOver;
 	}
-	
+
+	private void PacmanPowerDecrease(Pacman pacman, Ghosts ghosts)
+	{
+		pacman.PowerTimes--;
+		if (pacman.PowerTimes == 0) ghosts.Members.ForEach(ghost => ghost.Weak = true);
+	}
+
 	/// <summary>
 	/// 
 	/// </summary>
