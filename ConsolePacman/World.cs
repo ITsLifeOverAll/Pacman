@@ -1,3 +1,5 @@
+using System.Transactions;
+
 namespace ConsolePacman;
 
 public class World
@@ -194,7 +196,6 @@ public class World
 		
 		Console.ForegroundColor = originalForegroundColor;
 		Console.BackgroundColor = originalBackgroundColor;
-
 	}
 
 	public void ShowPacman(Pacman pacman, Position position)
@@ -232,8 +233,42 @@ public class World
 			Console.Write('G');
 		});
 	}
-	#endregion
+	
+	private void ShowScore()
+	{
+		Console.SetCursorPosition(0, 23);
+		UsingColor(ConsoleColor.White, ConsoleColor.Black, () =>
+		{
+			Console.WriteLine($"Score: {_score,8}");
+		});
+		
+	}
 
+	public void ShowGameOver(CancellationToken token)
+	{
+		Console.SetCursorPosition(0, 23);
+		Console.WriteLine($"Score: {_score,8} ");
+		
+		if (token.IsCancellationRequested)
+			Console.WriteLine("Game Cancelled.");
+		else if (!HasDots())
+			Console.WriteLine("You Win.");
+		else
+			Console.WriteLine("You Lose.");
+		Console.WriteLine("Game Over.");
+		
+	}
+
+	public void ClearPacman(Position position)
+	{
+		Console.SetCursorPosition(position.Col, position.Row);
+		UsingColor(ConsoleColor.White, ConsoleColor.Black, () =>
+		{
+			Console.Write(' ');
+		});
+	}
+
+	#endregion
 
 	public bool IsMovable(Position position, Direction direction)
 	{
@@ -271,15 +306,6 @@ public class World
 		return new Position(row, col);
 	}
 
-	public void ClearPacman(Position position)
-	{
-		Console.SetCursorPosition(position.Col, position.Row);
-		UsingColor(ConsoleColor.White, ConsoleColor.Black, () =>
-		{
-			Console.Write(' ');
-		});
-	}
-
 	/// <summary>
 	/// 
 	/// </summary>
@@ -304,24 +330,14 @@ public class World
 				PacmanPowerd(pacman, ghosts);
 				break;
 		}
-		
-		// todo if meet ghosts
+
+		if (!HasDots()) return true;
 		if (HasMet(pacman, ghosts)) isGameOver = Fight(pacman, ghosts);
 
 		ShowScore();
 		return isGameOver;
 	}
-
-	private void ShowScore()
-	{
-		Console.SetCursorPosition(0, 23);
-		UsingColor(ConsoleColor.White, ConsoleColor.Black, () =>
-		{
-			Console.WriteLine($"Score: {_score,8}");
-		});
-		
-	}
-
+	
 	/// <summary>
 	/// 
 	/// </summary>
@@ -330,17 +346,23 @@ public class World
 	/// <returns>true for game over</returns>
 	private bool Fight(Pacman pacman, Ghosts ghosts)
 	{
-		var ghost = ghosts.Members.FirstOrDefault(ghost => ghost.Position == pacman.Position);
-		if (ghost is null) return false;
+		var isGameOver = false;
+		var metGhosts = ghosts.Members.Where(ghost => ghost.Position == pacman.Position)
+			.ToArray();
+		if (metGhosts.Length ==0) return false;
 
-		if (ghost.Weak)
+		foreach (var ghost in metGhosts)
 		{
-			_score += 10;
-			ghosts.Reborn(ghost);
-			return false;
+			if (ghost.Weak)
+			{
+				_score += 10;
+				ghosts.Reborn(ghost);
+			}
+			else
+				isGameOver = true;
 		}
 
-		return true;
+		return isGameOver;
 	}
 
 	private bool HasMet(Pacman pacman, Ghosts ghosts) 
@@ -350,6 +372,62 @@ public class World
 	{
 		pacman.PowerTimes = Pacman.MaxPowerTimes;
 		ghosts.Members.ForEach(ghost => ghost.Weak = true);
+	}
+
+	public Direction GetRandomDirection(Position position)
+	{
+		Direction[] directions = [Direction.Up, Direction.Down, Direction.Left, Direction.Right];
+		var newDirections = new List<Direction>();
+
+		foreach (var direction in directions)
+		{
+			if (IsMovable(position, direction)) newDirections.Add(direction);
+		}
+
+		if (newDirections.Count == 0) return Direction.None;
+		return newDirections[Random.Shared.Next(newDirections.Count)];
+	}
+
+	public void ClearGhost(Ghost ghost)
+	{
+		var (row, col) = ghost.Position;
+		var c = _dots[row, col];
+		Console.SetCursorPosition(col, row);
+		
+		if (c != ' ')
+			UsingColor(ConsoleColor.Blue,ConsoleColor.Black, () =>
+			{
+				Console.Write(c);
+			});
+		else 
+			UsingColor(ConsoleColor.White, ConsoleColor.Black, () =>
+			{
+				Console.Write(' ');
+			});
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="ghosts"></param>
+	/// <param name="pacman"></param>
+	/// <returns>true for game over</returns>
+	public bool UpdateBy(Ghosts ghosts, Pacman pacman)
+	{
+		if (HasMet(pacman, ghosts)) return Fight(pacman, ghosts);
+		return false;
+	}
+	
+	private bool HasDots()
+	{
+		for (int row = 0; row < _dots.GetLength(0); row++)
+		{
+			for (int col = 0; col < _dots.GetLength(1); col++)
+			{
+				if (_dots[row, col] != ' ') return true;
+			}
+		}
+		return false;
 	}
 }
 

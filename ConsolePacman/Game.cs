@@ -58,11 +58,7 @@ public class Game
     private void AddDirection(Direction direction)
         => _world.Directions.Enqueue(direction);
     
-    private bool AskPlayAgain()
-    {
-        // todo AskPlayAgain
-        return false;
-    }
+    private bool AskPlayAgain() => StartGame();
 
     private async Task PlayAsync(CancellationToken token)
     {
@@ -76,20 +72,20 @@ public class Game
 
             if (!isGameOver)
             {
-                // todo _ghosts.GhostsMoveAndScore();
-                // todo isGameOver = _world.UpdateBy(_ghosts, _pacman);
+                _ghosts.GhostsMove();
+                isGameOver = _world.UpdateBy(_ghosts, _pacman);
             }
 
             await Task.Delay(100);
         }
 
-        // todo _world.ShowGameOver();
+        _world.ShowGameOver(token);
     }
 
     private bool StartGame()
     {
         _world.ShowTextReady();
-        Console.SetCursorPosition(0, 24);
+        Console.SetCursorPosition(0, 25);
         Console.WriteLine("Press [Enter] to play, [Escape] to quit.");
         
         var key = ConsoleKey.NoName;

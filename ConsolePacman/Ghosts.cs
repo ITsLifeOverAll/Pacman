@@ -19,16 +19,36 @@ public class Ghosts
         }
     }
 
-
     public void Reborn(Ghost ghost) 
-        => Members[ghost.index] = new Ghost(World, ghost.index);
+        => Members[ghost.Index] = new Ghost(World, ghost.Index);
+
+    public void GhostsMove()
+    {
+        foreach (var ghost in Members)
+        {
+            World.ShowGhost(ghost);
+            
+            ghost.StepFrame = ++ghost.StepFrame % ghost.MaxStepFrame;
+            if (ghost.StepFrame != 0) continue;
+
+            if (ghost.Weak) continue;
+
+            var direction = World.GetRandomDirection(ghost.Position);
+            var newPosition = World.GetPosition(ghost.Position, direction);
+            World.ClearGhost(ghost);
+            ghost.Position = newPosition;
+            World.ShowGhost(ghost);
+        }
+    }
 }
 
 public class Ghost(World world, int index)
 {
-    public int index;
+    public int Index = index;
     public Position Position = world.GhostStartPositions[index];
     public Direction Direction = Direction.None;
     public ConsoleColor Color = Ghosts.Colors[index];
     public bool Weak { get; set; }
+    public int StepFrame;
+    public int MaxStepFrame = 4;
 }
