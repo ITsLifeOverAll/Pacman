@@ -22,7 +22,7 @@ public class Ghosts
     public void Reborn(Ghost ghost) 
         => Members[ghost.Index] = new Ghost(World, ghost.Index);
 
-    public void GhostsMove()
+    public void GhostsMove(Pacman pacman)
     {
         foreach (var ghost in Members)
         {
@@ -33,7 +33,9 @@ public class Ghosts
 
             if (ghost.Weak) continue;
 
-            var direction = World.GetRandomDirection(ghost.Position);
+            // var direction = World.GetRandomDirection(ghost.Position);
+            var direction = World.GhostAlgorithmDirection(ghost, pacman);
+            
             var newPosition = World.GetPosition(ghost.Position, direction);
             World.ClearGhost(ghost);
             ghost.Position = newPosition;
@@ -51,4 +53,5 @@ public class Ghost(World world, int index)
     public bool Weak { get; set; }
     public int StepFrame;
     public int MaxStepFrame = 4;
+    public Position? FirstDestination = world.GhostFirstDestinations[index];
 }

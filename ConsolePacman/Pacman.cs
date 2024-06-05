@@ -84,6 +84,7 @@ public class Pacman
     {
         var faceRow = Convert.ToInt32(direction);
         if (faceRow < 0 || faceRow >= _pacManAnimations.Length) faceRow = 0;
+        
         _faceFrame = Direction == direction
             ? ++_faceFrame % _pacManAnimations[faceRow].Length
             : 0;

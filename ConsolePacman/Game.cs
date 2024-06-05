@@ -72,7 +72,7 @@ public class Game
 
             if (!isGameOver)
             {
-                _ghosts.GhostsMove();
+                _ghosts.GhostsMove(_pacman);
                 isGameOver = _world.UpdateBy(_ghosts, _pacman);
             }
 

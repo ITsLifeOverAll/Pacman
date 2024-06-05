@@ -129,11 +129,39 @@ public class World
 	private const char Dot = '·';
 	private char[,] _dots;
 	private int _score;
+	private readonly Bfs _bfs;
 	private const int BridgeRow = 10;
 
 	public World()
 	{
 		_dots = CreateDots();
+		_bfs = new Bfs(GetAllEdges());
+	}
+
+	private IEnumerable<Edge> GetAllEdges()
+	{
+		HashSet<Edge> edges = new();
+		Direction[] directions = [Direction.Up, Direction.Down, Direction.Left, Direction.Right];
+
+		for (int row = 0; row < GhostWallsString.Length; row++)
+		{
+			for (int col = 0; col < GhostWallsString[0].Length; col++)
+			{
+				if (GhostWallsString[row][col] != ' ') continue;
+
+				foreach (var direction in directions)
+				{
+					var from = new Position(row, col);
+					if (IsMovable(from, direction))
+					{
+						var to = GetPosition(from, direction);
+						edges.Add(new Edge(from, to));
+					}
+				}
+			}
+		}
+
+		return edges.ToList();
 	}
 
 	private char[,] CreateDots()
@@ -438,6 +466,35 @@ public class World
 			}
 		}
 		return false;
+	}
+
+	public Direction GhostAlgorithmDirection(Ghost ghost, Pacman pacman)
+	{
+		if (ghost.Position == ghost.FirstDestination) ghost.FirstDestination = null; 
+		var destination = ghost.FirstDestination ?? pacman.Position;
+
+		var nextPosition = _bfs.GetNextStep(ghost.Position, destination);
+		return GetDirection(ghost.Position, nextPosition);
+	}
+
+	private Direction GetDirection(Position start, Position end)
+	{
+		var row = start.Row;
+		var dCol = end.Col - start.Col;   // -1: left, 1: right
+		var dRow = end.Row - start.Row;   // -1: up, 1: down
+
+		return (row, dCol, dRow) switch
+		{
+			(_, -1, 0) => Direction.Left,
+			(_, 1, 0)  => Direction.Right,
+			(_, 0, -1) => Direction.Up,
+			(_, 0, 1) => Direction.Down,
+			
+			(BridgeRow, <0, 0) => Direction.Right,   // 39 -> 0 : right : -39 
+			(BridgeRow, >0, 0) => Direction.Left,  // 0 -> 39 : left : 39
+			
+			_ => throw new Exception($"{start} to {end} is not a valid direction")
+		};
 	}
 }
 
