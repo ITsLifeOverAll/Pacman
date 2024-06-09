@@ -106,7 +106,7 @@ public class World
 		"                                         ",];
 	#endregion
 	
-	public readonly Position[] GhostStartPositions = [
+	public static readonly Position[] GhostStartPositions = [
 		new Position(10, 16),
 		new Position(10, 24),
 		new Position(10, 18),
@@ -114,7 +114,7 @@ public class World
 		new Position(10, 20),
 	];
 
-	public readonly Position[] GhostFirstDestinations = [
+	public static readonly Position[] GhostFirstDestinations = [
 		new(3, 2),
 		new(3, 38),
 		new(17, 2),
@@ -125,6 +125,7 @@ public class World
 	public readonly Position PacmanStartPosition = new Position(17, 20);
 	public Queue<Direction> Directions { get; set; } = new();
 
+	// Magic Numbers
 	private const char PowerBall = '+';
 	private const char Dot = '·';
 	private char[,] _dots;
@@ -228,11 +229,11 @@ public class World
 
 	public void ShowPacman(Pacman pacman, Position position, Direction direction)
 	{
-		var (foregroundColor, backgroundColor) = pacman.StateColor();
+		var (foregroundColor, backgroundColor) = pacman.GetStateColor();
 		UsingColor(foregroundColor, backgroundColor, () =>
 		{
 			Console.SetCursorPosition(position.Col, position.Row);
-			var c = pacman.FrameFace(direction); 
+			var c = pacman.GetFrameFace(direction); 
 			Console.Write(c);
 		});
 	}
@@ -297,6 +298,25 @@ public class World
 			Console.Write(' ');
 		});
 	}
+	
+	public void ClearGhost(Ghost ghost)
+	{
+		var (row, col) = ghost.Position;
+		var c = _dots[row, col];
+		Console.SetCursorPosition(col, row);
+		
+		if (c != ' ')
+			UsingColor(ConsoleColor.Blue,ConsoleColor.Black, () =>
+			{
+				Console.Write(c);
+			});
+		else 
+			UsingColor(ConsoleColor.White, ConsoleColor.Black, () =>
+			{
+				Console.Write(' ');
+			});
+	}
+
 
 	#endregion
 
@@ -359,7 +379,7 @@ public class World
 			case PowerBall:
 				_score += 5;
 				_dots[row, col] = ' ';
-				PacmanPowerd(pacman, ghosts);
+				PacmanPowered(pacman, ghosts);
 				break;
 		}
 
@@ -373,7 +393,7 @@ public class World
 	private void PacmanPowerDecrease(Pacman pacman, Ghosts ghosts)
 	{
 		pacman.PowerTimes--;
-		if (pacman.PowerTimes == 0) ghosts.Members.ForEach(ghost => ghost.Weak = true);
+		if (pacman.PowerTimes == 0) ghosts.Members.ForEach(ghost => ghost.Weak = false);
 	}
 
 	/// <summary>
@@ -406,7 +426,7 @@ public class World
 	private bool HasMet(Pacman pacman, Ghosts ghosts) 
 		=> ghosts.Members.Any(ghost => ghost.Position == pacman.Position);
 
-	private void PacmanPowerd(Pacman pacman, Ghosts ghosts)
+	private void PacmanPowered(Pacman pacman, Ghosts ghosts)
 	{
 		pacman.PowerTimes = Pacman.MaxPowerTimes;
 		ghosts.Members.ForEach(ghost => ghost.Weak = true);
@@ -425,25 +445,7 @@ public class World
 		if (newDirections.Count == 0) return Direction.None;
 		return newDirections[Random.Shared.Next(newDirections.Count)];
 	}
-
-	public void ClearGhost(Ghost ghost)
-	{
-		var (row, col) = ghost.Position;
-		var c = _dots[row, col];
-		Console.SetCursorPosition(col, row);
-		
-		if (c != ' ')
-			UsingColor(ConsoleColor.Blue,ConsoleColor.Black, () =>
-			{
-				Console.Write(c);
-			});
-		else 
-			UsingColor(ConsoleColor.White, ConsoleColor.Black, () =>
-			{
-				Console.Write(' ');
-			});
-	}
-
+	
 	/// <summary>
 	/// 
 	/// </summary>
@@ -474,6 +476,9 @@ public class World
 		var destination = ghost.FirstDestination ?? pacman.Position;
 
 		var nextPosition = _bfs.GetNextStep(ghost.Position, destination);
+		if (nextPosition == ghost.Position)
+			return GetRandomDirection(ghost.Position);
+		
 		return GetDirection(ghost.Position, nextPosition);
 	}
 

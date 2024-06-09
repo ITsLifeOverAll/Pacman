@@ -15,21 +15,20 @@ public class Ghosts
         Members = new List<Ghost>();
         for (int i = 0; i < ghostCount; i++)
         {
-            Members.Add(new Ghost(World, i));
+            Members.Add(new Ghost(i));
         }
     }
 
     public void Reborn(Ghost ghost) 
-        => Members[ghost.Index] = new Ghost(World, ghost.Index);
+        => Members[ghost.Index] = new Ghost(ghost.Index);
 
-    public void GhostsMove(Pacman pacman)
+    public void Move(Pacman pacman)
     {
         foreach (var ghost in Members)
         {
             World.ShowGhost(ghost);
             
-            ghost.StepFrame = ++ghost.StepFrame % ghost.MaxStepFrame;
-            if (ghost.StepFrame != 0) continue;
+            if (!StepMovable(ghost)) continue;
 
             if (ghost.Weak) continue;
 
@@ -42,16 +41,23 @@ public class Ghosts
             World.ShowGhost(ghost);
         }
     }
+
+    private static bool StepMovable(Ghost ghost)
+    {
+        ghost.StepFrame = ++ghost.StepFrame % ghost.MaxStepFrame;
+        if (ghost.StepFrame == 0) return true;
+        return false;
+    }
 }
 
-public class Ghost(World world, int index)
+public class Ghost(int index)
 {
     public int Index = index;
-    public Position Position = world.GhostStartPositions[index];
+    public Position Position = World.GhostStartPositions[index];
     public Direction Direction = Direction.None;
     public ConsoleColor Color = Ghosts.Colors[index];
     public bool Weak { get; set; }
     public int StepFrame;
     public int MaxStepFrame = 4;
-    public Position? FirstDestination = world.GhostFirstDestinations[index];
+    public Position? FirstDestination = World.GhostFirstDestinations[index];
 }

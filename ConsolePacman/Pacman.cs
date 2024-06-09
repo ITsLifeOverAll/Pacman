@@ -31,7 +31,7 @@ public class Pacman
         Direction = Direction.None;
     }
 
-    public void PacmanMove()
+    public void Move()
     {
         if (!StepMovable()) return;
         
@@ -70,17 +70,17 @@ public class Pacman
         return _world.Directions.Dequeue();
     }
 
-    public (ConsoleColor foregroundColor, ConsoleColor backgroundColor) StateColor()
+    public (ConsoleColor foregroundColor, ConsoleColor backgroundColor) GetStateColor()
     {
         return PowerTimes switch
         {
-            <= 0 => (ConsoleColor.White, ConsoleColor.Yellow),
-            < TailPowerTimes => (ConsoleColor.White, ConsoleColor.Magenta),
-            _ => (ConsoleColor.White, ConsoleColor.Cyan)
+            <= 0 => (ConsoleColor.Black, ConsoleColor.Yellow),
+            < TailPowerTimes => (ConsoleColor.Black, ConsoleColor.Magenta),
+            _ => (ConsoleColor.Black, ConsoleColor.Cyan)
         };
     }
 
-    public char FrameFace(Direction direction)
+    public char GetFrameFace(Direction direction)
     {
         var faceRow = Convert.ToInt32(direction);
         if (faceRow < 0 || faceRow >= _pacManAnimations.Length) faceRow = 0;

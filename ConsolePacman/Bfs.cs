@@ -1,5 +1,9 @@
 ﻿namespace ConsolePacman;
 
+/// <summary>
+/// BFS Algorithm for Ghosts catching Pacman
+/// </summary>
+/// <param name="edges"></param>
 public class Bfs(IEnumerable<Edge> edges)
 {
     private IEnumerable<Edge> _edges = edges;

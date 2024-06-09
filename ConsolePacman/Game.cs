@@ -67,12 +67,12 @@ public class Game
         {
             if (token.IsCancellationRequested) break;
             
-            _pacman.PacmanMove();
+            _pacman.Move();
             isGameOver = _world.UpdateBy(_pacman, _ghosts);
 
             if (!isGameOver)
             {
-                _ghosts.GhostsMove(_pacman);
+                _ghosts.Move(_pacman);
                 isGameOver = _world.UpdateBy(_ghosts, _pacman);
             }
 
